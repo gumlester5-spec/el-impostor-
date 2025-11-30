@@ -1,42 +1,218 @@
-#root {
-  max-width: 1280px;
+/* src/App.css */
+.app-container {
+  padding: 20px;
+  font-family: system-ui, -apple-system, sans-serif;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 2rem;
+  color: #333;
+}
+
+.game-title {
   text-align: center;
+  color: #646cff;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.lobby-container {
+  text-align: center;
+  padding: 50px 20px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.play-button {
+  padding: 15px 30px;
+  font-size: 20px;
+  cursor: pointer;
+  background-color: #646cff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.play-button:hover {
+  transform: scale(1.05);
+  background-color: #535bf2;
+}
+
+.status-bar {
+  border: 2px solid #ccc;
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.status-title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.players-grid {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.player-card {
+  background-color: white;
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 280px;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.player-card.turn {
+  border: 4px solid #646cff;
+  transform: scale(1.05);
+  box-shadow: 0 8px 15px rgba(100, 108, 255, 0.3);
+}
+
+.player-card.can-vote {
+  border: 4px dashed #ff9800;
+  cursor: pointer;
+}
+
+.player-card.voted-by-me {
+  background-color: #ffeb3b;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.clue-bubble {
+  background: #f5f5f5;
+  color: #333;
+  padding: 15px;
+  border-radius: 12px;
+  min-height: 60px;
+  font-style: italic;
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+.input-area {
+  margin-top: 30px;
+  text-align: center;
+  position: sticky;
+  bottom: 20px;
+  z-index: 100;
+}
+
+.input-form {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  backdrop-filter: blur(5px);
+}
+
+.clue-input {
+  padding: 12px;
+  font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  flex: 1;
+  max-width: 300px;
+}
+
+.send-button {
+  padding: 12px 24px;
+  background-color: #646cff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+  .app-container {
+    padding: 10px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .game-title {
+    font-size: 2rem;
   }
-}
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  .status-title {
+    font-size: 1.2rem;
   }
-}
 
-.card {
-  padding: 2em;
-}
+  .players-grid {
+    gap: 15px;
+  }
 
-.read-the-docs {
-  color: #888;
+  .player-card {
+    max-width: 100%; /* Full width cards on mobile */
+    flex-direction: row; /* Horizontal layout for cards on mobile */
+    text-align: left;
+    padding: 15px;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .avatar {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 0;
+  }
+
+  .player-info {
+    flex: 1;
+  }
+
+  .clue-bubble {
+    margin-top: 10px;
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 10px;
+    min-height: auto;
+  }
+  
+  /* Re-structure card for mobile to put bubble below */
+  .player-card {
+    flex-wrap: wrap;
+  }
+  
+  .player-card > .clue-bubble {
+    order: 3;
+    width: 100%;
+  }
+
+  .input-form {
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .clue-input {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .send-button {
+    width: 100%;
+  }
 }

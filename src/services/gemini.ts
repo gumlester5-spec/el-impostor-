@@ -1,78 +1,142 @@
-// src/services/gemini.ts
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+    GoogleGenerativeAI,
+    HarmCategory,
+    HarmBlockThreshold
+} from "@google/generative-ai";
 import type { Player, Clue } from "../types";
 
-// Iniciamos la API
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+const safetySettings = [
+    {
+        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+    {
+        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+    {
+        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+    {
+        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+];
+
+const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+const model = genAI ? genAI.getGenerativeModel({
+    model: "gemini-2.5-flash",
+    safetySettings: safetySettings
+}) : null;
 
 export const generateAiClue = async (
     player: Player,
     secretWord: string,
     history: Clue[]
 ): Promise<string> => {
+    if (!model) return "Error: Falta API Key";
 
-    // 1. Preparamos el historial de texto para que la IA sepa qué han dicho antes
-    const conversationHistory = history.map(h => `- Jugador ${h.playerId} dijo: "${h.text}"`).join("\n");
+    const conversationHistory = history.length > 0
+        ? history.map(h => `- Jugador ${h.playerId}: "${h.text}"`).join("\n")
+        : "Nadie ha hablado aún.";
 
-    // 2. Definimos la personalidad según el personaje
-    let personality = "";
-    if (player.name === "Julián") {
-        personality = "Eres Julián, un panadero tierno, amable y un poco tímido. Hablas de forma dulce y suave.";
-    } else if (player.name === "Sofía") {
-        personality = "Eres Sofía, una artista urbana, cool y moderna. Hablas con confianza, estilo y energía.";
-    }
+    const trait = player.name === "Julián" ? "tierno e inocente" : "cool, moderna y directa";
 
-    // 3. CONSTRUCCIÓN DEL PROMPT (La parte más importante)
     let prompt = "";
 
     if (player.role === 'INOCENTE') {
-        // --- LÓGICA DE INOCENTE ---
-        // Sabe la palabra y debe dar una pista sutil.
         prompt = `
-      ${personality}
-      Estás jugando al juego "El Impostor".
-      La palabra secreta es: "${secretWord}".
-      
-      Historial de pistas dichas hasta ahora:
-      ${conversationHistory}
-
-      Tu misión: Di una pista MUY BREVE (máximo 10 palabras) sobre la palabra secreta.
-      Reglas:
-      1. No digas la palabra secreta.
-      2. No seas demasiado obvio, pero tampoco mientas.
-      3. Mantén tu personalidad.
-      
-      Respuesta (solo la pista):
-    `;
+            Contexto: Juego de mesa familiar "El Impostor".
+            Personaje: Eres ${player.name}, una persona ${trait}.
+            Palabra Secreta: "${secretWord}".
+            Historial de la ronda:
+            ${conversationHistory}
+            
+            Tarea: Escribe una pista MUY BREVE (máximo 12 palabras) que describa la palabra "${secretWord}" sutilmente para probar que NO eres el impostor.
+            Reglas: NO digas la palabra secreta. Habla en primera persona. Sé natural.
+            Respuesta:
+        `;
     } else {
-        // --- LÓGICA DE IMPOSTOR ---
-        // NO sabe la palabra. Debe fingir basándose en el historial.
         prompt = `
-      ${personality}
-      Estás jugando al juego "El Impostor".
-      ¡TÚ ERES EL IMPOSTOR!
-      NO SABES cuál es la palabra secreta.
-      
-      Historial de pistas dichas por los otros (úsalo para deducir de qué hablan):
-      ${conversationHistory}
-
-      Tu misión: Di una pista MUY BREVE (máximo 10 palabras) que suene convincente para encajar con lo que han dicho los demás.
-      Reglas:
-      1. Trata de ser vago o genérico para que no te descubran.
-      2. Si no hay historial, di algo muy general que aplique a muchas cosas.
-      3. ¡Miente con confianza!
-      
-      Respuesta (solo la pista):
-    `;
+            Contexto: Juego de mesa familiar "El Impostor".
+            Personaje: Eres ${player.name}, una persona ${trait}.
+            Rol: ERES EL IMPOSTOR. No sabes la palabra secreta.
+            Historial de pistas de otros jugadores:
+            ${conversationHistory}
+            
+            Tarea: Escribe una pista MUY BREVE (máximo 12 palabras) que suene convincente para encajar con lo que han dicho los otros.
+            Reglas: Miente con confianza. Si nadie ha hablado, di algo genérico sobre un objeto común.
+            Respuesta:
+        `;
     }
 
     try {
         const result = await model.generateContent(prompt);
-        const response = result.response;
-        return response.text().trim();
+        const text = result.response.text().replace(/^"|"$/g, '').trim();
+        return text || "Mmm...";
+    } catch (e) {
+        console.error("Error Gemini Pista:", e);
+        return "¡Ay! Me quedé en blanco.";
+    }
+};
+
+export const generateSecretWord = async (): Promise<string> => {
+    if (!model) return "Pizza";
+
+    const prompt = `
+        Genera una sola palabra en español para un juego de adivinanzas.
+        Debe ser un sustantivo concreto común (ej. Guitarra, Sol, Manzana, Silla).
+        Respuesta: SOLO la palabra. Sin puntos.
+    `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        return result.response.text().replace(/[\."\n]/g, '').trim();
     } catch (error) {
-        console.error("Error conectando con Gemini:", error);
-        return "Mmm... estoy pensando..."; // Respuesta por defecto si falla
+        console.error("Error Gemini Palabra:", error);
+        return "Luna";
+    }
+};
+
+export const generateAiVote = async (
+    voter: Player,
+    players: Player[],
+    history: Clue[]
+): Promise<number> => {
+    if (!model) return 1;
+
+    const conversationHistory = history.map(h => `- P${h.playerId}: "${h.text}"`).join("\n");
+    const candidates = players.filter(p => p.id !== voter.id).map(p => p.id).join(", ");
+
+    const prompt = `
+        Juego: El Impostor.
+        Historial:
+        ${conversationHistory}
+        
+        Eres el Jugador ${voter.id} (${voter.role}).
+        Debes votar para expulsar a alguien.
+        
+        ${voter.role === 'INOCENTE'
+            ? "Analiza las pistas. Vota al jugador cuya pista tenga menos sentido con la palabra secreta."
+            : "Vota a cualquier otro jugador inocente para salvarte."}
+        
+        Candidatos válidos (IDs): ${candidates}.
+        
+        Respuesta: ÚNICAMENTE el número del ID del jugador. Ejemplo: 2
+    `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const text = result.response.text().trim();
+        const votedId = parseInt(text.match(/\d+/)?.[0] || "1");
+        return votedId;
+    } catch (error) {
+        console.error("Error Gemini Voto:", error);
+        const validTargets = players.filter(p => p.id !== voter.id);
+        const randomTarget = validTargets[Math.floor(Math.random() * validTargets.length)];
+        return randomTarget.id;
     }
 };
