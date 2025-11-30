@@ -1,3 +1,4 @@
+// src/context/GameContext.tsx
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import type { GameState, Role } from '../types';
 import { INITIAL_PLAYERS } from '../constants';
@@ -10,6 +11,7 @@ interface GameContextType {
     submitClue: (text: string) => void;
     startRound: () => void;
     castVote: (voterId: number, targetId: number) => void;
+    updatePlayerNames: (p1: string, p2: string, p3: string) => void; // <--- AGREGADO
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -27,24 +29,42 @@ const initialGameState: GameState = {
 export const GameProvider = ({ children }: { children: ReactNode }) => {
     const [gameState, setGameState] = useState<GameState>(initialGameState);
 
+    // --- NUEVA FUNCIÓN PARA CAMBIAR NOMBRES ---
+    const updatePlayerNames = useCallback((name1: string, name2: string, name3: string) => {
+        setGameState(prev => ({
+            ...prev,
+            players: prev.players.map(p => {
+                if (p.id === 1) return { ...p, name: name1 };
+                if (p.id === 2) return { ...p, name: name2 };
+                if (p.id === 3) return { ...p, name: name3 };
+                return p;
+            })
+        }));
+    }, []);
+
     const startGame = useCallback(async () => {
         const word = await generateSecretWord();
-
         const impostorIndex = Math.floor(Math.random() * 3);
         const randomStartTurn = Math.floor(Math.random() * 3) + 1;
 
-        const newPlayers = INITIAL_PLAYERS.map((player, index) => ({
-            ...player,
-            role: (index === impostorIndex ? 'IMPOSTOR' : 'INOCENTE') as Role,
-            voteCast: undefined
-        }));
+        // IMPORTANTE: Mantenemos los nombres actuales usando map sobre prev.players
+        setGameState(prev => {
+            const newPlayers = prev.players.map((player, index) => ({
+                ...player,
+                role: (index === impostorIndex ? 'IMPOSTOR' : 'INOCENTE') as Role,
+                voteCast: undefined
+            }));
 
-        setGameState({
-            ...initialGameState,
-            players: newPlayers,
-            secretWord: word,
-            phase: 'REVEAL',
-            currentTurn: randomStartTurn,
+            return {
+                ...prev,
+                players: newPlayers,
+                secretWord: word,
+                phase: 'REVEAL',
+                currentTurn: randomStartTurn,
+                currentRound: 1,
+                clues: [],
+                winner: undefined
+            };
         });
     }, []);
 
@@ -53,7 +73,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const resetGame = useCallback(() => {
-        setGameState(initialGameState);
+        // Al resetear, mantenemos los nombres, solo reseteamos roles
+        setGameState(prev => ({
+            ...initialGameState,
+            players: prev.players.map(p => ({ ...p, role: null, voteCast: undefined }))
+        }));
     }, []);
 
     const submitClue = useCallback((text: string) => {
@@ -92,15 +116,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
             );
 
             const votesCount = updatedPlayers.filter(p => p.voteCast !== undefined).length;
-
             let finalPhase = prev.phase;
             let winner: Role | undefined = undefined;
 
             if (votesCount === 3) {
                 const votesReceived: Record<number, number> = { 1: 0, 2: 0, 3: 0 };
-                updatedPlayers.forEach(p => {
-                    if (p.voteCast) votesReceived[p.voteCast]++;
-                });
+                updatedPlayers.forEach(p => { if (p.voteCast) votesReceived[p.voteCast]++; });
 
                 let maxVotes = 0;
                 let playerMostVotedId = -1;
@@ -109,20 +130,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
                     if (count > maxVotes) {
                         maxVotes = count;
                         playerMostVotedId = parseInt(id);
-                    } else if (count === maxVotes) {
-                        playerMostVotedId = -1;
-                    }
+                    } else if (count === maxVotes) playerMostVotedId = -1;
                 });
 
                 if (playerMostVotedId === -1) {
                     finalPhase = 'TIE';
                 } else {
                     const expelledPlayer = updatedPlayers.find(p => p.id === playerMostVotedId);
-                    if (expelledPlayer?.role === 'IMPOSTOR') {
-                        winner = 'INOCENTE';
-                    } else {
-                        winner = 'IMPOSTOR';
-                    }
+                    winner = expelledPlayer?.role === 'IMPOSTOR' ? 'INOCENTE' : 'IMPOSTOR';
                     finalPhase = 'GAME_OVER';
                 }
             }
@@ -137,7 +152,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     return (
-        <GameContext.Provider value={{ gameState, startGame, resetGame, submitClue, startRound, castVote }}>
+        <GameContext.Provider value={{ gameState, startGame, resetGame, submitClue, startRound, castVote, updatePlayerNames }}>
             {children}
         </GameContext.Provider>
     );

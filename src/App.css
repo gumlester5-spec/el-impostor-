@@ -1,218 +1,257 @@
 /* src/App.css */
+:root {
+  --primary: #646cff;
+  --bg-app: #f0f2f5;
+  --card-bg: #ffffff;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-app);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  height: 100%;
+}
+
 .app-container {
   padding: 20px;
-  font-family: system-ui, -apple-system, sans-serif;
-  max-width: 900px;
+  /* Centrar la App y limitar el ancho máximo para que no se estire demasiado */
+  max-width: 1200px;
   margin: 0 auto;
-  color: #333;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding-bottom: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* ESTO CENTRA TODO EN LA PANTALLA */
+}
+
+/* Forzamos que los hijos ocupen el ancho disponible */
+.app-container>* {
+  width: 100%;
+  max-width: 1000px;
+  /* Limite interno para contenido */
 }
 
 .game-title {
   text-align: center;
-  color: #646cff;
+  color: var(--primary);
   font-size: 2.5rem;
-  margin-bottom: 2rem;
+  margin: 20px 0 40px 0;
 }
 
-.lobby-container {
+/* LOBBY */
+.lobby-card {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  max-width: 400px;
+  margin: 0 auto;
+  /* Centrado */
   text-align: center;
-  padding: 50px 20px;
+}
+
+.config-input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 20px 0;
+  border: 2px solid #e1e4e8;
+  border-radius: 12px;
+  font-size: 16px;
+  box-sizing: border-box;
 }
 
 .play-button {
-  padding: 15px 30px;
-  font-size: 20px;
-  cursor: pointer;
-  background-color: #646cff;
+  background: var(--primary);
   color: white;
   border: none;
-  border-radius: 8px;
-  transition: transform 0.2s, background-color 0.2s;
+  padding: 16px 32px;
+  font-size: 18px;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 100%;
 }
 
-.play-button:hover {
-  transform: scale(1.05);
-  background-color: #535bf2;
-}
-
+/* BARRA SUPERIOR */
 .status-bar {
-  border: 2px solid #ccc;
-  padding: 20px;
-  border-radius: 15px;
-  margin-bottom: 30px;
+  background: white;
+  padding: 15px 20px;
+  border-radius: 16px;
   text-align: center;
-  transition: all 0.3s ease;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border-bottom: 5px solid transparent;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.status-title {
-  margin: 0;
-  font-size: 1.5rem;
-}
-
+/* GRID DE JUGADORES (CORREGIDO PARA PC) */
 .players-grid {
   display: flex;
+  flex-direction: row;
+  /* Horizontal por defecto */
   justify-content: center;
+  /* Centrados horizontalmente */
   gap: 20px;
   flex-wrap: wrap;
+  /* Si no caben, bajan, pero intentarán quedarse arriba */
+  width: 100%;
 }
 
 .player-card {
-  background-color: white;
-  border: 1px solid #ddd;
+  background: var(--card-bg);
+  border-radius: 20px;
   padding: 20px;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 280px;
-  text-align: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  /* Flexibilidad ajustada: Base 250px, puede encogerse hasta 220px */
+  flex: 1 1 250px;
+  max-width: 320px;
+  /* Reducido para que quepan 3 en pantallas medianas */
+  min-width: 240px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 3px solid transparent;
+  transition: all 0.3s ease;
 }
 
+/* Turno activo */
 .player-card.turn {
-  border: 4px solid #646cff;
-  transform: scale(1.05);
-  box-shadow: 0 8px 15px rgba(100, 108, 255, 0.3);
+  border-color: var(--primary);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(100, 108, 255, 0.15);
 }
 
 .player-card.can-vote {
-  border: 4px dashed #ff9800;
   cursor: pointer;
-}
-
-.player-card.voted-by-me {
-  background-color: #ffeb3b;
+  border-color: #ff9800;
+  border-style: dashed;
 }
 
 .avatar {
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  /* Un poco más pequeño para ahorrar espacio */
+  height: 80px;
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 10px;
+  border: 3px solid #f0f2f5;
+}
+
+.player-info h3 {
+  margin: 5px 0;
+  font-size: 1.1rem;
 }
 
 .clue-bubble {
-  background: #f5f5f5;
-  color: #333;
-  padding: 15px;
+  background: #f8f9fa;
+  color: #2d3748;
+  padding: 12px;
   border-radius: 12px;
-  min-height: 60px;
-  font-style: italic;
-  margin-top: auto;
+  border: 1px solid #e2e8f0;
   width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  font-style: italic;
+  font-size: 0.95rem;
+  margin-top: auto;
+  /* Empuja hacia abajo */
+  min-height: 60px;
+  /* Altura mínima para que se vean uniformes */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.95rem;
 }
 
+/* INPUT FLOTANTE */
 .input-area {
-  margin-top: 30px;
-  text-align: center;
-  position: sticky;
-  bottom: 20px;
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 600px;
   z-index: 100;
 }
 
 .input-form {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
   background: rgba(255, 255, 255, 0.95);
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(10px);
+  padding: 10px 15px;
+  border-radius: 50px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .clue-input {
-  padding: 12px;
-  font-size: 16px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
+  border: none;
+  background: transparent;
   flex: 1;
-  max-width: 300px;
+  font-size: 16px;
+  outline: none;
+  padding-left: 10px;
 }
 
 .send-button {
-  padding: 12px 24px;
-  background-color: #646cff;
+  background: var(--primary);
   color: white;
   border: none;
-  border-radius: 8px;
-  font-weight: bold;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 600px) {
-  .app-container {
-    padding: 10px;
+/* --- MÓVIL: RESPONSIVE COMPACTO --- */
+@media (max-width: 768px) {
+  .players-grid {
+    gap: 10px;
+  }
+
+  .player-card {
+    /* En móvil: 2 columnas exactas para los bots */
+    flex: 1 1 45%;
+    min-width: 0;
+    /* Permitir que se encojan */
+    padding: 12px;
+  }
+
+  /* El usuario (Tú) ocupa todo el ancho abajo */
+  .player-card:first-child {
+    flex: 1 1 100%;
+    order: 3;
+    /* Visualmente al final */
+    margin-top: 10px;
+  }
+
+  .avatar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .clue-bubble {
+    font-size: 0.85rem;
+    padding: 8px;
+    min-height: 50px;
   }
 
   .game-title {
     font-size: 2rem;
   }
 
-  .status-title {
-    font-size: 1.2rem;
-  }
-
-  .players-grid {
-    gap: 15px;
-  }
-
-  .player-card {
-    max-width: 100%; /* Full width cards on mobile */
-    flex-direction: row; /* Horizontal layout for cards on mobile */
-    text-align: left;
-    padding: 15px;
-    align-items: center;
-    gap: 15px;
-  }
-
-  .avatar {
-    width: 60px;
-    height: 60px;
-    margin-bottom: 0;
-  }
-
-  .player-info {
-    flex: 1;
-  }
-
-  .clue-bubble {
-    margin-top: 10px;
-    width: 100%;
-    font-size: 0.9rem;
-    padding: 10px;
-    min-height: auto;
-  }
-  
-  /* Re-structure card for mobile to put bubble below */
-  .player-card {
-    flex-wrap: wrap;
-  }
-  
-  .player-card > .clue-bubble {
-    order: 3;
-    width: 100%;
-  }
-
-  .input-form {
-    flex-direction: column;
-    padding: 10px;
-  }
-
-  .clue-input {
-    max-width: 100%;
-    width: 100%;
-  }
-
-  .send-button {
-    width: 100%;
+  /* Más espacio abajo en móvil para el teclado y input */
+  .app-container {
+    padding-bottom: 150px;
   }
 }
