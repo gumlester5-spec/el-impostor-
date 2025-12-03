@@ -1,4 +1,3 @@
-/* src/App.css */
 :root {
   --primary: #646cff;
   --bg-app: #f0f2f5;
@@ -16,7 +15,7 @@ body {
 
 .app-container {
   padding: 20px;
-  /* Centrar la App y limitar el ancho máximo para que no se estire demasiado */
+
   max-width: 1200px;
   margin: 0 auto;
   min-height: 100vh;
@@ -25,14 +24,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* ESTO CENTRA TODO EN LA PANTALLA */
+
 }
 
-/* Forzamos que los hijos ocupen el ancho disponible */
+
 .app-container>* {
   width: 100%;
   max-width: 1000px;
-  /* Limite interno para contenido */
+
 }
 
 .game-title {
@@ -42,7 +41,7 @@ body {
   margin: 20px 0 40px 0;
 }
 
-/* LOBBY */
+
 .lobby-card {
   background: white;
   padding: 2.5rem;
@@ -50,7 +49,7 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   max-width: 400px;
   margin: 0 auto;
-  /* Centrado */
+
   text-align: center;
 }
 
@@ -76,9 +75,11 @@ body {
   width: 100%;
 }
 
-/* BARRA SUPERIOR */
+
 .status-bar {
   background: white;
+  color: #333;
+  /* Forzar texto oscuro para que se vea sobre fondo blanco */
   padding: 15px 20px;
   border-radius: 16px;
   text-align: center;
@@ -87,18 +88,28 @@ body {
   border-bottom: 5px solid transparent;
   width: 100%;
   box-sizing: border-box;
+
+  /* FIJAR EN LA PARTE SUPERIOR */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
-/* GRID DE JUGADORES (CORREGIDO PARA PC) */
+.status-bar h2,
+.status-bar p {
+  color: #333 !important;
+}
+
+
 .players-grid {
   display: flex;
   flex-direction: row;
-  /* Horizontal por defecto */
+
   justify-content: center;
-  /* Centrados horizontalmente */
+
   gap: 20px;
   flex-wrap: wrap;
-  /* Si no caben, bajan, pero intentarán quedarse arriba */
+
   width: 100%;
 }
 
@@ -106,10 +117,10 @@ body {
   background: var(--card-bg);
   border-radius: 20px;
   padding: 20px;
-  /* Flexibilidad ajustada: Base 250px, puede encogerse hasta 220px */
+
   flex: 1 1 250px;
   max-width: 320px;
-  /* Reducido para que quepan 3 en pantallas medianas */
+
   min-width: 240px;
 
   display: flex;
@@ -120,7 +131,7 @@ body {
   transition: all 0.3s ease;
 }
 
-/* Turno activo */
+
 .player-card.turn {
   border-color: var(--primary);
   transform: translateY(-5px);
@@ -133,9 +144,17 @@ body {
   border-style: dashed;
 }
 
+.player-card.voted-by-me {
+  border-color: #ff9800;
+  background-color: #fff3e0;
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 152, 0, 0.4);
+  border-style: solid;
+}
+
 .avatar {
   width: 80px;
-  /* Un poco más pequeño para ahorrar espacio */
+
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
@@ -160,15 +179,15 @@ body {
   font-style: italic;
   font-size: 0.95rem;
   margin-top: auto;
-  /* Empuja hacia abajo */
+
   min-height: 60px;
-  /* Altura mínima para que se vean uniformes */
+
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* INPUT FLOTANTE */
+
 .input-area {
   position: fixed;
   bottom: 30px;
@@ -213,25 +232,26 @@ body {
   margin-left: 10px;
 }
 
-/* --- MÓVIL: RESPONSIVE COMPACTO --- */
+
 @media (max-width: 768px) {
   .players-grid {
     gap: 10px;
+    padding-top: 80px;
   }
 
   .player-card {
-    /* En móvil: 2 columnas exactas para los bots */
+
     flex: 1 1 45%;
     min-width: 0;
-    /* Permitir que se encojan */
+
     padding: 12px;
   }
 
-  /* El usuario (Tú) ocupa todo el ancho abajo */
+
   .player-card:first-child {
     flex: 1 1 100%;
     order: 3;
-    /* Visualmente al final */
+
     margin-top: 10px;
   }
 
@@ -250,8 +270,28 @@ body {
     font-size: 2rem;
   }
 
-  /* Más espacio abajo en móvil para el teclado y input */
+
+  .status-bar {
+    padding: 8px 15px;
+    margin-bottom: 120px;
+    /* Aumentado a 120px para asegurar visibilidad total */
+    background: white;
+    backdrop-filter: none;
+    border-bottom: 1px solid #eee;
+  }
+
+  .status-bar h2 {
+    font-size: 1.3rem !important;
+  }
+
+  .status-bar p {
+    font-size: 0.85rem !important;
+    margin-top: 2px !important;
+  }
+
   .app-container {
+    padding-top: 10px;
+    /* Reducir padding superior del contenedor */
     padding-bottom: 150px;
   }
 }

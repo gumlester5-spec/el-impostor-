@@ -49,26 +49,32 @@ export const generateAiClue = async (
 
     if (player.role === 'INOCENTE') {
         prompt = `
-            Contexto: Juego de mesa familiar "El Impostor".
+            Contexto: Juego "El Impostor".
             Personaje: Eres ${player.name}, una persona ${trait}.
             Palabra Secreta: "${secretWord}".
-            Historial de la ronda:
+            Historial:
             ${conversationHistory}
             
-            Tarea: Escribe una pista MUY BREVE (máximo 12 palabras) que describa la palabra "${secretWord}" sutilmente para probar que NO eres el impostor.
-            Reglas: NO digas la palabra secreta. Habla en primera persona. Sé natural.
+            ESTRATEGIA OFICIAL (INOCENTE):
+            "Debes dar una pista lo suficientemente clara para que el otro inocente sepa que tú sabes la palabra, pero lo suficientemente sutil para que el impostor no adivine de qué están hablando."
+            
+            Tarea: Escribe una pista (máx 12 palabras) siguiendo tu estrategia.
+            Reglas: NO digas la palabra secreta. Habla en primera persona.
             Respuesta:
         `;
     } else {
         prompt = `
-            Contexto: Juego de mesa familiar "El Impostor".
+            Contexto: Juego "El Impostor".
             Personaje: Eres ${player.name}, una persona ${trait}.
             Rol: ERES EL IMPOSTOR. No sabes la palabra secreta.
-            Historial de pistas de otros jugadores:
+            Historial:
             ${conversationHistory}
             
-            Tarea: Escribe una pista MUY BREVE (máximo 12 palabras) que suene convincente para encajar con lo que han dicho los otros.
-            Reglas: Miente con confianza. Si nadie ha hablado, di algo genérico sobre un objeto común.
+            ESTRATEGIA OFICIAL (IMPOSTOR):
+            "Como no sabes la palabra, debes leer las pistas anteriores de los otros jugadores, deducir el tema y decir algo vago o genérico que encaje para no levantar sospechas."
+            
+            Tarea: Escribe una pista (máx 12 palabras) siguiendo tu estrategia.
+            Reglas: Miente con confianza. Si eres el primero, di algo muy genérico sobre un objeto común.
             Respuesta:
         `;
     }
@@ -83,12 +89,18 @@ export const generateAiClue = async (
     }
 };
 
+import { getUsedWords } from "./history";
+
 export const generateSecretWord = async (): Promise<string> => {
     if (!model) return "Pizza";
+
+    const usedWords = await getUsedWords();
+    const excluded = usedWords.length > 0 ? `NO uses estas palabras: ${usedWords.join(", ")}.` : "";
 
     const prompt = `
         Genera una sola palabra en español para un juego de adivinanzas.
         Debe ser un sustantivo concreto común (ej. Guitarra, Sol, Manzana, Silla).
+        ${excluded}
         Respuesta: SOLO la palabra. Sin puntos.
     `;
 
@@ -113,25 +125,37 @@ export const generateAiVote = async (
 
     const prompt = `
         Juego: El Impostor.
-        Historial:
+        Palabra Secreta (Contexto): "${history[0]?.text ? 'Desconocida para el impostor' : '...'}"
+        
+        Historial de pistas:
         ${conversationHistory}
         
-        Eres el Jugador ${voter.id} (${voter.role}).
-        Debes votar para expulsar a alguien.
+        Tu Rol: Jugador ${voter.id} (${voter.role}).
+        Tu Misión: Votar para expulsar a alguien.
         
+        Candidatos Válidos (IDs): [${candidates}]
+        
+        Instrucciones de Estrategia:
         ${voter.role === 'INOCENTE'
-            ? "Analiza las pistas. Vota al jugador cuya pista tenga menos sentido con la palabra secreta."
-            : "Vota a cualquier otro jugador inocente para salvarte."}
+            ? "- Eres INOCENTE. Busca al jugador cuya pista sea más lejana, vaga o incorrecta respecto a la palabra secreta (si la sabes) o al contexto."
+            : "- Eres el IMPOSTOR. Debes votar por un inocente para salvarte. Elige a quien parezca más sospechoso para los demás."}
         
-        Candidatos válidos (IDs): ${candidates}.
+        REGLA ABSOLUTA:
+        - NO puedes votarte a ti mismo (ID ${voter.id}).
+        - DEBES elegir uno de los IDs de la lista de candidatos: ${candidates}.
         
-        Respuesta: ÚNICAMENTE el número del ID del jugador. Ejemplo: 2
+        Respuesta: ÚNICAMENTE el número del ID del jugador seleccionado.
     `;
 
     try {
         const result = await model.generateContent(prompt);
         const text = result.response.text().trim();
-        const votedId = parseInt(text.match(/\d+/)?.[0] || "1");
+        let votedId = parseInt(text.match(/\d+/)?.[0] || "1");
+
+        // VALIDACIÓN: Si vota por sí mismo o ID inválido, forzar error para usar fallback
+        if (votedId === voter.id || !players.some(p => p.id === votedId)) {
+            throw new Error("Voto inválido (auto-voto o ID inexistente)");
+        }
         return votedId;
     } catch (error) {
         console.error("Error Gemini Voto:", error);

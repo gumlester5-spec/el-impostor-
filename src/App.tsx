@@ -11,7 +11,7 @@ function App() {
   const [isConfiguring, setIsConfiguring] = useState(true);
   const [configNames, setConfigNames] = useState({ user: '', bot1: 'Julián', bot2: 'Sofía' });
 
-  // 1. CARGAR NOMBRES GUARDADOS
+
   useEffect(() => {
     const saved = localStorage.getItem('impostor_config');
     if (saved) {
@@ -22,7 +22,7 @@ function App() {
     }
   }, [updatePlayerNames]);
 
-  // 2. GUARDAR NOMBRES
+
   const handleSaveConfig = () => {
     if (!configNames.user.trim()) return alert("¡Escribe tu nombre!");
 
@@ -37,7 +37,7 @@ function App() {
     setLoading(false);
   };
 
-  // --- LÓGICA DEL JUEGO ---
+
   useEffect(() => {
     if (gameState.phase === 'REVEAL') {
       const timer = setTimeout(() => startRound(), 4000);
@@ -74,19 +74,19 @@ function App() {
     }
   }, [gameState.phase, gameState.players, castVote, generateAiVote, gameState.clues]);
 
-  // --- CORRECCIÓN DE LA PALABRA SECRETA ---
+
   let mainTitle = "";
   let subTitle = "";
-  let borderColor = '#66bb6a'; // Verde por defecto
+  let borderColor = '#66bb6a';
 
-  // Lógica principal de visualización
+
   if (gameState.phase === 'REVEAL') {
     mainTitle = myPlayer?.role === 'IMPOSTOR' ? "🤫 ERES EL IMPOSTOR" : `Palabra: ${gameState.secretWord}`;
     subTitle = "Memoriza tu rol...";
     if (myPlayer?.role === 'IMPOSTOR') borderColor = '#ef5350';
   }
   else if (gameState.phase === 'PLAYING') {
-    // AQUÍ ESTABA EL ERROR: Siempre mostramos la palabra si eres inocente
+
     mainTitle = myPlayer?.role === 'IMPOSTOR' ? "🤫 ERES EL IMPOSTOR" : `Palabra: ${gameState.secretWord}`;
     subTitle = `Ronda ${gameState.currentRound} - Turno de ${gameState.players.find(p => p.id === gameState.currentTurn)?.name}`;
     if (myPlayer?.role === 'IMPOSTOR') borderColor = '#ef5350';
@@ -110,7 +110,7 @@ function App() {
     <div className="app-container">
       <h1 className="game-title">🕵️‍♂️ El Impostor</h1>
 
-      {/* PANTALLA DE CONFIGURACIÓN */}
+
       {isConfiguring ? (
         <div className="lobby-card">
           <h2>👤 Configuración</h2>
@@ -126,7 +126,7 @@ function App() {
           <button onClick={handleSaveConfig} className="play-button" style={{ marginTop: 20 }}>Guardar</button>
         </div>
       ) : (
-        /* PANTALLA DE JUEGO */
+
         <>
           {gameState.phase === 'LOBBY' && (
             <div className="lobby-card">
@@ -150,7 +150,7 @@ function App() {
                 <p style={{ margin: '8px 0 0', opacity: 0.8, fontSize: '1rem' }}>{subTitle}</p>
               </div>
 
-              {/* GRID DE JUGADORES */}
+
               <div className="players-grid">
                 {gameState.players.map(p => {
                   const showRole = (p.isHuman || gameState.phase === 'GAME_OVER');

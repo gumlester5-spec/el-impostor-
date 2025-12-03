@@ -1,73 +1,56 @@
-# React + TypeScript + Vite
+# 🕵️‍♂️ El Impostor - Juego de Deducción Social con IA
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+¡Bienvenido a **El Impostor**! Un juego de engaño, astucia y deducción donde jugarás contra dos Inteligencias Artificiales (Julián y Sofía).
 
-Currently, two official plugins are available:
+## � Reglamento Oficial
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 1. El Objetivo
+El objetivo cambia dependiendo del rol secreto que te toque al inicio de la partida:
 
-## React Compiler
+*   **😇 Si eres Inocente (Hay 2):** Tu misión es identificar quién de los otros dos jugadores es el impostor y convencer al otro inocente de votar por él.
+*   **😈 Si eres el Impostor (Hay 1):** Tu misión es pasar desapercibido, fingir que sabes la palabra secreta y lograr que expulsen a un inocente o que haya un empate.
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+### 2. La Preparación
+*   **Jugadores:** 3 participantes (Tú + 2 IAs).
+*   **La Palabra Secreta:** Al inicio, el sistema elige una palabra al azar (ej. "Pizza", "Guitarra").
+*   **Roles:**
+    *   Los **Inocentes** ven la palabra secreta en su pantalla.
+    *   El **Impostor** ve un mensaje de alerta: "🤫 ERES EL IMPOSTOR" y **no ve la palabra**.
 
-## Expanding the ESLint configuration
+### 3. Desarrollo del Juego
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+#### Fase 1: Revelación
+Tienes 4 segundos para memorizar tu rol y, si eres inocente, la palabra secreta.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+#### Fase 2: Rondas de Pistas (El Interrogatorio)
+El juego consta de 2 Rondas. En tu turno, debes escribir una pista relacionada con la palabra secreta.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+*   **🚫 Regla de Oro:** No puedes decir la palabra secreta.
+*   **Estrategia del Inocente:** Da una pista clara para el otro inocente, pero sutil para que el impostor no adivine la palabra.
+*   **Estrategia del Impostor:** Lee las pistas anteriores, deduce el tema y di algo vago o genérico que encaje para no levantar sospechas.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+#### Fase 3: La Votación
+Al terminar las rondas, comienza la votación. Cada jugador vota por quien cree que es el Impostor.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 4. Condiciones de Victoria
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+*   **🎉 Ganan los Inocentes:** Si la mayoría (2 votos) expulsa al Impostor.
+*   **😈 Gana el Impostor:** Si logran expulsar a un inocente o si nadie sospecha de él.
+*   **⚖️ Empate:** Si cada jugador recibe 1 voto. Nadie es expulsado.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## 🛠️ Configuración Técnica (Para Desarrolladores)
+
+Este proyecto utiliza **React + Vite** y la **API de Google Gemini**.
+
+### Requisitos
+Para jugar localmente o desplegar, necesitas una API Key de Google Gemini.
+
+1.  Crea un archivo `.env` en la raíz.
+2.  Agrega tu clave: `VITE_GEMINI_API_KEY=tu_api_key_aqui`
+3.  Instala y corre:
+    ```bash
+    npm install
+    npm run dev
+    ```

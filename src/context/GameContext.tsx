@@ -1,8 +1,9 @@
-// src/context/GameContext.tsx
+
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import type { GameState, Role } from '../types';
 import { INITIAL_PLAYERS } from '../constants';
 import { generateSecretWord } from '../services/gemini';
+import { saveWord } from '../services/history';
 
 interface GameContextType {
     gameState: GameState;
@@ -11,7 +12,7 @@ interface GameContextType {
     submitClue: (text: string) => void;
     startRound: () => void;
     castVote: (voterId: number, targetId: number) => void;
-    updatePlayerNames: (p1: string, p2: string, p3: string) => void; // <--- AGREGADO
+    updatePlayerNames: (p1: string, p2: string, p3: string) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -29,7 +30,7 @@ const initialGameState: GameState = {
 export const GameProvider = ({ children }: { children: ReactNode }) => {
     const [gameState, setGameState] = useState<GameState>(initialGameState);
 
-    // --- NUEVA FUNCIÓN PARA CAMBIAR NOMBRES ---
+
     const updatePlayerNames = useCallback((name1: string, name2: string, name3: string) => {
         setGameState(prev => ({
             ...prev,
@@ -42,12 +43,15 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         }));
     }, []);
 
+
+
     const startGame = useCallback(async () => {
         const word = await generateSecretWord();
+        await saveWord(word); // Guardar en historial
         const impostorIndex = Math.floor(Math.random() * 3);
         const randomStartTurn = Math.floor(Math.random() * 3) + 1;
 
-        // IMPORTANTE: Mantenemos los nombres actuales usando map sobre prev.players
+
         setGameState(prev => {
             const newPlayers = prev.players.map((player, index) => ({
                 ...player,
@@ -73,7 +77,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const resetGame = useCallback(() => {
-        // Al resetear, mantenemos los nombres, solo reseteamos roles
+
         setGameState(prev => ({
             ...initialGameState,
             players: prev.players.map(p => ({ ...p, role: null, voteCast: undefined }))
@@ -111,6 +115,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
     const castVote = useCallback((voterId: number, targetId: number) => {
         setGameState(prev => {
+            if (voterId === targetId) return prev; // No puedes votarte a ti mismo
+            const player = prev.players.find(p => p.id === voterId);
+            if (player?.voteCast !== undefined) return prev; // Si ya votó, no hacer nada
+
             const updatedPlayers = prev.players.map(p =>
                 p.id === voterId ? { ...p, voteCast: targetId } : p
             );
